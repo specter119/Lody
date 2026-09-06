@@ -13,9 +13,7 @@ import type { MinimalVisualAnnotationAnchor } from './visual-annotation-types';
 import type { WorktreeScriptPhase } from './project';
 import {
   DEEPSEEK_HARNESS_AGENT_PRESETS,
-  DEEPSEEK_HARNESS_MODELS,
   DEEPSEEK_HARNESS_PERMISSION_MODES,
-  DEEPSEEK_HARNESS_REASONING_OPTIONS,
 } from './deepseek-harness';
 
 export const MANAGED_BUILTIN_RUNTIMES = [
@@ -439,28 +437,6 @@ const DEEPSEEK_HARNESS_CONFIG_OPTIONS: AcpConfigOptionSummary[] = [
     type: 'select',
     currentValue: 'standard',
     options: DEEPSEEK_HARNESS_AGENT_PRESETS.map((preset) => ({ ...preset })),
-  },
-  {
-    id: 'model',
-    name: 'Model',
-    description: 'DeepSeek model used for the session',
-    category: 'model',
-    type: 'select',
-    currentValue: 'deepseek-v4-pro',
-    options: DEEPSEEK_HARNESS_MODELS.map((model) => ({
-      value: model.modelId,
-      name: model.name,
-      description: model.description,
-    })),
-  },
-  {
-    id: 'reasoning_effort',
-    name: 'Reasoning effort',
-    description: 'How much reasoning effort the model should use',
-    category: 'thought_level',
-    type: 'select',
-    currentValue: 'max',
-    options: DEEPSEEK_HARNESS_REASONING_OPTIONS.map((option) => ({ ...option })),
   },
 ];
 
@@ -933,7 +909,7 @@ const STATIC_BUILTIN_ACP_CAPABILITIES: Record<BuiltinAgentType, StaticBuiltinAcp
   },
   deepseek: {
     modes: DEEPSEEK_HARNESS_PERMISSION_MODES.map((mode) => ({ ...mode })),
-    models: DEEPSEEK_HARNESS_MODELS.map((model) => ({ ...model })),
+    models: [],
     configOptions: DEEPSEEK_HARNESS_CONFIG_OPTIONS,
   },
 };
@@ -1489,6 +1465,15 @@ export type MessageContent =
        * for scheduling tool calls; see `collectPendingScheduledTasksFromHistory`.
        */
       schedulingTimeZone?: string;
+      /**
+       * Epoch ms when this tool call was first persisted by the machine that ran it.
+       * Only set for scheduling tool calls: the turn entry's timestamps are NOT a safe
+       * proxy for the creation moment (cron-fire follow-up turns are runtime-internal
+       * steers, so one history entry can aggregate several runtime turns and its
+       * `endedAt` keeps advancing past a one-shot's fire minute). See
+       * `collectPendingScheduledTasksFromHistory`.
+       */
+      recordedAtMs?: number;
       permissionRequest?: {
         requestId: string;
         options: PermissionOption[];
